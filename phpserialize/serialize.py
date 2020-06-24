@@ -25,6 +25,12 @@ def _handle_attr(attr):
             continue
         sub = getattr(attr, i)
         if not callable(sub):
+            if i.startswith('private_'):
+                i = f'\0{attr_type}\0{i[8:]}'
+            if i.startswith('protected_'):
+                i = f'\0*\0{i[10:]}'
+            if i.startswith('public_'):
+                i = i[7:]
             children.append(serialize(i) + serialize(sub))
     return f'O:{len(attr_type)}:"{attr_type}":{len(children)}:{{{"".join(children)}}}'
 

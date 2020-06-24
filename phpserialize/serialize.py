@@ -1,4 +1,5 @@
 class __empty__:
+    __namespace__ = None
     pass
 
 
@@ -14,13 +15,17 @@ def _handle_array(a: [dict, list]):
 
 def _handle_attr(attr):
     children = []
+    try:
+        namespace = attr.__namespace__
+    except AttributeError:
+        namespace = ''
+    attr_type = namespace.rstrip('\\') + '\\' + type(attr).__name__
     for i in dir(attr):
         if i in blacklist:
             continue
         sub = getattr(attr, i)
         if not callable(sub):
             children.append(serialize(i) + serialize(sub))
-    attr_type = type(attr).__name__
     return f'O:{len(attr_type)}:"{attr_type}":{len(children)}:{{{"".join(children)}}}'
 
 

@@ -1,3 +1,6 @@
 __pycache__/
 .pytest_cache/
 .idea/
+libphpserialize.egg-info/
+dist/
+build/

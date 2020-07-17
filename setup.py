@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="libphpserialize",
-    version="0.0.1-beta",
+    version="0.0.1-beta2",
     author="Frank",
     author_email="frankli0324@hotmail.com",
     description="A port of PHP's serialize function, in pure python",

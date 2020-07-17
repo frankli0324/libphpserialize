@@ -16,10 +16,10 @@ def _handle_array(a: [dict, list]):
 def _handle_attr(attr):
     children = []
     try:
-        namespace = attr.__namespace__
+        namespace = attr.__namespace__.rstrip('\\') + '\\'
     except AttributeError:
         namespace = ''
-    attr_type = namespace.rstrip('\\') + '\\' + type(attr).__name__
+    attr_type = namespace + type(attr).__name__
     for i in dir(attr):
         if i in blacklist:
             continue

@@ -6,10 +6,25 @@ class __empty__:
 blacklist = set(dir(__empty__))
 
 
+class __track__:
+    def __init__(self):
+        self.t, self.c = {}, 0
+
+    def get(self, obj):
+        return self.t.get(id(obj), None)
+
+    def put(self, obj):
+        self.c += 1
+        self.t[id(obj)] = self.c
+
+
+track = __track__()
+
+
 def _handle_array(a: [dict, list]):
     results = []
     for k in a.keys() if type(a) is dict else range(len(a)):
-        results.append(serialize(k) + serialize(a[k]))
+        results.append(_serialize(k, is_key=True) + _serialize(a[k]))
     return f'a:{len(a)}:{{{"".join(results)}}}'
 
 
@@ -31,7 +46,7 @@ def _handle_attr(attr):
                 i = f'\0*\0{i[10:]}'
             if i.startswith('public_'):
                 i = i[7:]
-            children.append(serialize(i) + serialize(sub))
+            children.append(_serialize(i, is_key=True) + _serialize(sub))
     return f'O:{len(attr_type)}:"{attr_type}":{len(children)}:{{{"".join(children)}}}'
 
 
@@ -65,7 +80,16 @@ def register_handler(type, handler):
     _handlers[type] = handler
 
 
-def serialize(obj):
+def _serialize(obj, is_key=False):
+    if not is_key:
+        if (t := track.get(obj)):
+            return f'R:{t};'
+        track.put(obj)
     if type(obj) in _handlers:
         return _handlers[type(obj)](obj)
     return _handle_attr(obj)
+
+
+def serialize(obj):
+    track.__init__()
+    return _serialize(obj)

@@ -87,3 +87,6 @@ def _handle(sg):
 
 def unserialize(s: str):
     return _handle((c for c in s))
+
+
+__all__ = ['unserialize', 'UnserializeTypeError', 'UnserializeFormatError', ]

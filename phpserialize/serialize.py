@@ -1,3 +1,12 @@
+class SerialzeValueError(ValueError):
+    pass
+
+
+class ref:
+    def __init__(self, obj):
+        self.obj = obj
+
+
 class __empty__:
     __namespace__ = None
     pass
@@ -34,6 +43,10 @@ def _handle_attr(attr):
         namespace = attr.__namespace__.rstrip('\\') + '\\'
     except AttributeError:
         namespace = ''
+    if type(attr) == ref:
+        if not (i := track.get(attr.obj)):
+            raise SerialzeValueError("Invalid Reference")
+        return f'R:{i};'
     attr_type = namespace + type(attr).__name__
     for i in dir(attr):
         if i in blacklist:
@@ -81,15 +94,18 @@ def register_handler(type, handler):
 
 
 def _serialize(obj, is_key=False):
-    if not is_key:
-        if (t := track.get(obj)):
-            return f'R:{t};'
-        track.put(obj)
     if type(obj) in _handlers:
         return _handlers[type(obj)](obj)
+    if not is_key:
+        if (t := track.get(obj)):
+            return f'r:{t};'
+        track.put(obj)
     return _handle_attr(obj)
 
 
 def serialize(obj):
     track.__init__()
     return _serialize(obj)
+
+
+__all__ = ['serialize', 'register_handler', 'ref', 'SerialzeValueError', ]

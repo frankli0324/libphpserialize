@@ -1,4 +1,4 @@
-from phpserialize import serialize
+from phpserialize import serialize, ref
 
 
 class Test2:
@@ -19,6 +19,7 @@ class TestRecursion:
         self.a = object()
         self.b = self.a
         assert(id(self.b) == id(self.a))
+        self.c = ref(self.a)
 
 
 objects = [
@@ -31,7 +32,7 @@ objects = [
               'i:3;i:4;}s:1:"e";a:2:{i:0;i:5;i:1;i:6;}s:1:"f";N;s:1:"g";b:1;}}')),
     (['a', '423', 234], 'a:3:{i:0;s:1:"a";i:1;s:3:"423";i:2;i:234;}'),
     ({'test': 1, 2: 'test3'}, 'a:2:{s:4:"test";i:1;i:2;s:5:"test3";}'),
-    (TestRecursion(), 'O:13:"TestRecursion":2:{s:1:"a";O:6:"object":0:{}s:1:"b";R:2;}')
+    (TestRecursion(), 'O:13:"TestRecursion":3:{s:1:"a";O:6:"object":0:{}s:1:"b";r:2;s:1:"c";R:2;}')
     # 9223372036854775808: 'd:9.223372036854776E+18;',
     # 10023372036854775808.1234: 'd:1.0023372036854776E+19;',
     # 10000000000000000000: 'd:1.0E+19;'

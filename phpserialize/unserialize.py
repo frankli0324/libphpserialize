@@ -26,8 +26,16 @@ def _handle_str(sg):
     cnt = int(_handle_int(sg))
     assert next(sg) == '"'
     s = ''
+    skip = False
     for _ in range(cnt):
-        s += next(sg)
+        if skip:
+            continue
+        next_char = next(sg)
+        if next_char.isascii():
+            skip = False
+        else:
+            skip = True
+        s += next_char
     assert(next(sg)) == '"'
     next(sg)  # ; or :
     return s

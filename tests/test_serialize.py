@@ -1,4 +1,4 @@
-from phpserialize import serialize, ref
+from phpserialize import serialize, ref, SerialzeValueError
 
 
 class Test2:
@@ -31,7 +31,9 @@ objects = [
     (Test(), ('O:4:"Test":3:{s:1:"a";i:1;s:1:"b";s:1:"2";s:1:"c";O:5:"Test2":4:{s:1:"d";a:1:{'
               'i:3;i:4;}s:1:"e";a:2:{i:0;i:5;i:1;i:6;}s:1:"f";N;s:1:"g";b:1;}}')),
     (['a', '423', 234], 'a:3:{i:0;s:1:"a";i:1;s:3:"423";i:2;i:234;}'),
+    ({'a': 1, '8': 'b'}, 'a:2:{s:1:"a";i:1;i:8;s:1:"b";}'),
     ({'test': 1, 2: 'test3'}, 'a:2:{s:4:"test";i:1;i:2;s:5:"test3";}'),
+    ({'test': 1, Test(): 1}, SerialzeValueError('Illegal offset type')),
     (TestRecursion(), 'O:13:"TestRecursion":3:{s:1:"a";O:6:"object":0:{}s:1:"b";r:2;s:1:"c";R:2;}')
     # 9223372036854775808: 'd:9.223372036854776E+18;',
     # 10023372036854775808.1234: 'd:1.0023372036854776E+19;',
@@ -41,10 +43,13 @@ objects = [
 
 def test_serialize():
     for k, v in objects:
-        if __name__ == '__main__':
-            print(serialize(k), v)
-        if serialize(k) != v:
-            raise AssertionError(f'serialize({k}) != "{v}" ("{serialize(k)}")')
+        try:
+            result = serialize(k)
+            if result != v:
+                raise AssertionError(f'serialize({k}) != "{v}" ("{result}")')
+        except SerialzeValueError as e:
+            if type(e) != type(v) or e.args != v.args:
+                raise
 
 
 if __name__ == '__main__':

@@ -88,7 +88,7 @@ def _handle_number(num: Union[int, float]):
 
 
 _handlers = {
-    str: lambda x: f's:{len(x)}:"{x}";',
+    str: lambda x: f's:{len(x.encode("utf-8"))}:"{x}";',
     int: _handle_number,
     float: _handle_number,
     list: _handle_array,

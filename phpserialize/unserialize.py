@@ -25,14 +25,19 @@ def _handle_int(sg):
     return int(s[1:-1])
 
 
+def _handle_double(sg):
+    s = '0'
+    while s[-1] != ';' and s[-1] != ':':
+        s += chr(next(sg))
+    return float(s[1:-1])
+
+
 def _handle_str(sg) -> bytes:
     # in php, strings are regarded as raw bytes
     # so a `bytes` object is returned here.
     cnt = int(_handle_int(sg))
     assert chr(next(sg)) == '"'
-    s = b''
-    for _ in range(cnt):
-        s += bytes((next(sg),))
+    s = bytes((next(sg) for _ in range(cnt)))
     assert chr(next(sg)) == '"'
     next(sg)  # ; or :
     return s
@@ -75,6 +80,7 @@ def _handle_object(sg):
 _handlers = {
     'b': lambda sg: [chr(next(sg)), next(sg)][0] == '1',
     'i': _handle_int,
+    'd': _handle_double,
     'a': _handle_array,
     's': _handle_str,
     'O': _handle_object,

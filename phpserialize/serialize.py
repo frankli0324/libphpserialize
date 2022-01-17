@@ -1,4 +1,5 @@
-from typing import Union
+from typing import Union, Callable
+from string import printable
 
 
 class SerialzeValueError(ValueError):
@@ -8,6 +9,52 @@ class SerialzeValueError(ValueError):
 class ref:
     def __init__(self, obj):
         self.obj = obj
+
+
+class S:
+    '''
+    'S' typed string that php supports for unserializing
+    see ext/standard/var_unserializer.re:unserialize_str().
+
+    Under these circumstances one could use this type for serializing data:
+        * passing binary data as php string;
+        * bypassing wafs that take effect before unserializing happens.
+        * etc.
+
+    Storing binary data directly into python str could be problematic.
+    You could use this instead.
+    it's first introduced around php 5.1 and 5.2 (`php/php-src/commit/8f5310af`).
+    Documentation for this feature could not be found anywhere,
+    so I'm not sure what it should be called
+    '''
+
+    def __init__(self, s,
+                 encode_chars: Union[str, bytes, Callable[[int], bool]] = None,
+                 encode_all=False,
+                 format='02x'):
+        if type(encode_chars) == str:
+            encode_chars = encode_chars.encode()
+        if type(encode_chars) == bytes:
+            self.encode_chars = lambda x: x in encode_chars
+        if not encode_chars:
+            self.encode_chars = lambda x: x not in bytes(printable, 'utf-8')
+        self.encode_all = encode_all
+        self.format = format
+        if type(s) == str:
+            s = s.encode('utf-8')
+        self.s = s
+
+    def __getitem__(self, item):
+        if self.encode_all or self.encode_chars(item) or item == 92:
+            return '\\' + format(item, self.format)
+        else:
+            return chr(item)
+
+    def encode(self):
+        return ''.join(self[c] for c in self.s)
+
+    def __str__(self):
+        return f'S:{len(self.s)}:"{self.encode()}";'
 
 
 class __empty__:
@@ -89,6 +136,7 @@ def _handle_number(num: Union[int, float]):
 
 _handlers = {
     str: lambda x: f's:{len(x.encode("utf-8"))}:"{x}";',
+    S: lambda x: str(x),
     int: _handle_number,
     float: _handle_number,
     list: _handle_array,
@@ -151,4 +199,4 @@ def serialize(obj):
     return _serialize(obj)
 
 
-__all__ = ['serialize', 'register_handler', 'ref', 'SerialzeValueError', ]
+__all__ = ['serialize', 'register_handler', 'ref', 'S', 'SerialzeValueError', ]

@@ -1,4 +1,4 @@
-from typing import Union, Callable
+from typing import Iterable, Union, Callable
 from string import printable
 
 
@@ -12,23 +12,8 @@ class ref:
 
 
 class S:
-    '''
-    'S' typed string that php supports for unserializing
-    see ext/standard/var_unserializer.re:unserialize_str().
-
-    Under these circumstances one could use this type for serializing data:
-        * passing binary data as php string;
-        * bypassing wafs that take effect before unserializing happens.
-        * etc.
-
-    Storing binary data directly into python str could be problematic.
-    You could use this instead.
-    it's first introduced around php 5.1 and 5.2 (`php/php-src/commit/8f5310af`).
-    Documentation for this feature could not be found anywhere,
-    so I'm not sure what it should be called
-    '''
-
-    def __init__(self, s,
+    'See https://github.com/frankli0324/libphpserialize/wiki/PHP-String-and-Binary-Data'
+    def __init__(self, s: Union[str, bytes, Iterable[int]],
                  encode_chars: Union[str, bytes, Callable[[int], bool]] = None,
                  encode_all=False,
                  format='02x'):
@@ -36,8 +21,10 @@ class S:
             encode_chars = encode_chars.encode()
         if type(encode_chars) == bytes:
             self.encode_chars = lambda x: x in encode_chars
-        if not encode_chars:
+        elif not encode_chars:
             self.encode_chars = lambda x: x not in bytes(printable, 'utf-8')
+        else:
+            self.encode_chars = encode_chars
         self.encode_all = encode_all
         self.format = format
         if type(s) == str:
@@ -45,6 +32,8 @@ class S:
         self.s = s
 
     def __getitem__(self, item):
+        if type(item) != int or item < 0 or item > 256:
+            raise SerialzeValueError()
         if self.encode_all or self.encode_chars(item) or item == 92:
             return '\\' + format(item, self.format)
         else:
@@ -153,41 +142,13 @@ def register_handler(type, handler):
 def _serialize(obj):
     if type(obj) in _handlers:
         return _handlers[type(obj)](obj)
-    # basic types are not tracked
-    # see ext/standard/var.c, around line 610
-    # if (!is_ref && Z_TYPE_P(var) != IS_OBJECT) {
-	#     return 0;
-	# }
-    # PHP does recognize basic type implicit references though
-    # php > var_dump(unserialize("a:2:{i:0;i:1;i:1;R:2;}"));
-    # array(2) {
-    #   [0]=>
-    #   &int(1)
-    #   [1]=>
-    #   &int(1)
-    # }
-    # php > var_dump(unserialize("a:2:{i:0;i:1;i:1;r:2;}"));
-    # PHP Notice:  unserialize(): Error at offset 21 of 22 bytes in php shell code on line 1
-    # Notice: unserialize(): Error at offset 21 of 22 bytes in php shell code on line 1
-    # bool(false)
+    # wiki/Handling-Reference-Types#tracking-objects
     if (t := track.get(obj)):
         return f'r:{t};'
 
     if type(obj) == ref:
         if not (i := track.get(obj.obj)):
-            # PHP would dereference and serialize the value normally
-            # since people would want references explicitly when writing Python scripts,
-            # an error is raised here.
-            # though that brings up the problem of ordering, take the following example:
-            # ```php
-            # php > class Obj{};
-            # php > $a = new Obj();
-            # php > $b = &$a;
-            # php > echo serialize(array($a, $b));
-            # a:2:{i:0;O:3:"Obj":0:{}i:1;r:2;}
-            # php > echo serialize(array($b, $a)); # this would raise an error in libphpserialize
-            # a:2:{i:0;O:3:"Obj":0:{}i:1;r:2;}
-            # ```
+            # wiki/Handling-Reference-Types#serialzevalueerror-invalid-reference
             raise SerialzeValueError("Invalid Reference")
         return f'R:{i};'
     track.put(obj)

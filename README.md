@@ -2,6 +2,10 @@
 
 A port of PHP's serialize function, in pure python
 
+## Installation
+
+`pip install libphpserialize`
+
 ## Features
 
 - serialize objects directly from python objects

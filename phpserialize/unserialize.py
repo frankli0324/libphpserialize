@@ -17,6 +17,9 @@ class __PHP_Incomplete_Class(PHP_Class):
     def __init__(self, name: str):
         self.__PHP_Incomplete_Class_Name = name
 
+    def __repr__(self):
+        return f'<{self.__PHP_Incomplete_Class_Name}>'
+
 
 def _handle_int(sg):
     s = '0'
@@ -61,12 +64,12 @@ def _handle_object(sg):
     class_name = _handle_str(sg).decode('utf-8')
     property_cnt = _handle_int(sg)
     assert chr(next(sg)) == '{'
-    class_type = __PHP_Incomplete_Class
     for cls in PHP_Class.__subclasses__():
         if cls.__name__ == class_name:
-            class_type = cls
-    # __init__ not called
-    obj = PHP_Class.__new__(class_type)
+            # __init__ not called
+            obj = PHP_Class.__new__(cls)
+    else:
+        obj = __PHP_Incomplete_Class(class_name)
     for _ in range(property_cnt):
         assert chr(next(sg)) == 's' and chr(next(sg)) == ':'
         # property names must be string

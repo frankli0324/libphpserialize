@@ -1,5 +1,7 @@
 from typing import Union
 
+from .types import *
+
 
 class UnserializeTypeError(TypeError):
     pass
@@ -7,18 +9,6 @@ class UnserializeTypeError(TypeError):
 
 class UnserializeFormatError(SyntaxError):
     pass
-
-
-class PHP_Class:
-    pass
-
-
-class __PHP_Incomplete_Class(PHP_Class):
-    def __init__(self, name: str):
-        self.__PHP_Incomplete_Class_Name = name
-
-    def __repr__(self):
-        return f'<{self.__PHP_Incomplete_Class_Name}>'
 
 
 def _handle_int(sg):

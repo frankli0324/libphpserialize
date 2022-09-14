@@ -48,6 +48,7 @@ class S:
 
 class __empty__:
     __namespace__ = None
+    __annotations__ = None
     pass
 
 

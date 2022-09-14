@@ -95,6 +95,8 @@ def _handle(sg):
             raise UnserializeTypeError('Invalid Type')
         return _handlers[x](sg)
     except AssertionError:
+        if x == 'N':
+            return None
         raise UnserializeFormatError()
 
 

@@ -99,6 +99,10 @@ def _handle_attr(attr):
         sub = getattr(attr, i)
         if not callable(sub):
             if i.startswith('private_'):
+                # Limitation: this locks `attr_type` to current type,
+                #   so when private properties are inherited from
+                #   other classes, this may produce different output
+                #   with php itself.
                 i = f'\0{attr_type}\0{i[8:]}'
             if i.startswith('protected_'):
                 i = f'\0*\0{i[10:]}'

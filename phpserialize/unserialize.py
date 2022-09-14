@@ -50,6 +50,17 @@ def _handle_array(sg):
     return result
 
 
+def _get_attr_type(name: str):
+    if not name.startswith('\0'):
+        return 'public', name
+    end = name[1:].find('\0') + 1
+    sli, varname = name[1:end], name[end + 1:]
+    if sli == '*':
+        return 'protected', varname
+    else:
+        return 'private', (sli, varname)
+
+
 def _handle_object(sg):
     class_name = _handle_str(sg).decode('utf-8')
     property_cnt = _handle_int(sg)
@@ -63,9 +74,16 @@ def _handle_object(sg):
     for _ in range(property_cnt):
         assert chr(next(sg)) == 's' and chr(next(sg)) == ':'
         # property names must be string
-        name = _handle_str(sg).decode('utf-8')
-        value = _handle(sg)
-        setattr(obj, name, value)
+        var_type, var_name = _get_attr_type(_handle_str(sg).decode('utf-8'))
+        var_value = _handle(sg)
+        if var_type == 'public':
+            if hasattr(obj, f'{var_type}_{var_name}'):
+                var_name = f'{var_type}_{var_name}'
+        elif var_type == 'protected':
+            var_name = f'{var_type}_{var_name}'
+        elif var_type == 'private':
+            var_name = f'{var_type}_{var_name[1]}'
+        setattr(obj, var_name, var_value)
     assert chr(next(sg)) == '}'
     return obj
 

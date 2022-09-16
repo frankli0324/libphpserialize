@@ -69,6 +69,7 @@ def _handle_object(sg):
         if cls.__name__ == class_name:
             # __init__ not called
             obj = PHP_Class.__new__(cls)
+            break
     else:
         obj = __PHP_Incomplete_Class(class_name)
     for _ in range(property_cnt):

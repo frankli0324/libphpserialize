@@ -1,4 +1,6 @@
 # serveral PHP internal types
+from typing import List
+
 
 class PHP_Class:
     pass
@@ -19,7 +21,7 @@ class Error(PHP_Class):
     protected_message: bytes
     private_previous: any
     private_str: bytes
-    private_trace: list[dict]
+    private_trace: List[dict]
 
 
 class SoapClient(PHP_Class):

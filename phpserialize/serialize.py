@@ -148,14 +148,16 @@ def _serialize(obj):
     if type(obj) in _handlers:
         return _handlers[type(obj)](obj)
     # wiki/Handling-Reference-Types#tracking-objects
-    if (t := track.get(obj)):
-        return f'r:{t};'
+    appeared_obj = track.get(obj)
+    if appeared_obj:
+        return f'r:{appeared_obj};'
 
     if type(obj) == ref:
-        if not (i := track.get(obj.obj)):
+        appeared_obj = track.get(obj.obj)
+        if not appeared_obj:
             # wiki/Handling-Reference-Types#serialzevalueerror-invalid-reference
             raise SerialzeValueError("Invalid Reference")
-        return f'R:{i};'
+        return f'R:{appeared_obj};'
     track.put(obj)
     return _handle_attr(obj)
 

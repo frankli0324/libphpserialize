@@ -66,7 +66,11 @@ def _handle_object(sg):
     property_cnt = _handle_int(sg)
     assert chr(next(sg)) == '{'
     for cls in PHP_Class.__subclasses__():
-        if cls.__name__ == class_name:
+        if hasattr(cls, '__namespace__'):
+            cls_name = cls.__namespace__.rstrip('\\') + '\\' + cls.__name__
+        else:
+            cls_name = cls.__name__
+        if cls_name == class_name:
             # __init__ not called
             obj = PHP_Class.__new__(cls)
             break

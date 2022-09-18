@@ -80,6 +80,8 @@ def _handle_array(a: Union[dict, list]):
                 results.append(_handlers[int](int(k)) + _serialize(a[k]))
             else:
                 results.append(_handlers[str](k) + _serialize(a[k]))
+        elif type(k) is bytes:
+            results.append(_handlers[bytes](k) + _serialize(a[k]))
         else:
             # https://www.php.net/manual/en/language.types.array.php
             raise SerialzeValueError('Illegal offset type')
@@ -130,6 +132,7 @@ def _handle_number(num: Union[int, float]):
 
 _handlers = {
     str: lambda x: f's:{len(x.encode("utf-8"))}:"{x}";',
+    bytes: lambda x : str(S(x)),
     S: lambda x: str(x),
     int: _handle_number,
     float: _handle_number,

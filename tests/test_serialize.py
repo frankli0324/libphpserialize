@@ -1,4 +1,5 @@
 from phpserialize import serialize, ref, SerialzeValueError
+from phpserialize import namespace
 
 
 class Test2:
@@ -18,8 +19,14 @@ class TestRecursion:
     def __init__(self):
         self.a = object()
         self.b = self.a
-        assert(id(self.b) == id(self.a))
+        assert (id(self.b) == id(self.a))
         self.c = ref(self.a)
+
+
+@namespace('axqJ', 'zjUw')
+@namespace('qwer\\zxcv')
+class TestNamespace:
+    pass
 
 
 objects = [
@@ -36,7 +43,8 @@ objects = [
     ({'a': 1, '8': 'b'}, 'a:2:{s:1:"a";i:1;i:8;s:1:"b";}'),
     ({'test': 1, 2: 'test3'}, 'a:2:{s:4:"test";i:1;i:2;s:5:"test3";}'),
     ({'test': 1, Test(): 1}, SerialzeValueError('Illegal offset type')),
-    (TestRecursion(), 'O:13:"TestRecursion":3:{s:1:"a";O:6:"object":0:{}s:1:"b";r:2;s:1:"c";R:2;}')
+    (TestRecursion(),'O:13:"TestRecursion":3:{s:1:"a";O:6:"object":0:{}s:1:"b";r:2;s:1:"c";R:2;}'),
+    (TestNamespace(), 'O:33:"qwer\\zxcv\\axqJ\\zjUw\\TestNamespace":0:{}'),
     # 9223372036854775808: 'd:9.223372036854776E+18;',
     # 10023372036854775808.1234: 'd:1.0023372036854776E+19;',
     # 10000000000000000000: 'd:1.0E+19;'

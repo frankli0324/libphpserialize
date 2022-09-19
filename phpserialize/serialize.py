@@ -90,11 +90,9 @@ def _handle_array(a: Union[dict, list]):
 
 def _handle_attr(attr):
     children = []
-    try:
-        namespace = attr.__namespace__.rstrip('\\') + '\\'
-    except AttributeError:
-        namespace = ''
-    attr_type = namespace + type(attr).__name__
+    attr_type = type(attr).__name__
+    if hasattr(attr, '__namespace__'):
+        attr_type = '\\'.join(attr.__namespace__ + [attr_type])
     for i in dir(attr):
         if i in blacklist:
             continue
